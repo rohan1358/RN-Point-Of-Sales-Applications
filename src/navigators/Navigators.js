@@ -4,8 +4,11 @@ import React from 'react';
 import Add from '../screen/Add';
 import Home from '../screen/Home';
 import Cart from '../screen/Cart';
+import History from '../screen/History';
 import Edit from '../screen/EditProduct';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+// import {Ionicons} from '@expo/vector-icons';
+// import {NavigationContainer} from '@react-navigation/native';
 
 const Bottom = createBottomTabNavigator();
 const MainNavigators = () => {
@@ -14,7 +17,7 @@ const MainNavigators = () => {
       <Bottom.Screen name="Home" component={Home} />
       <Bottom.Screen name="Add" component={Add} />
       <Bottom.Screen name="Cart" component={Cart} />
-      <Bottom.Screen name="Edit" component={Edit} />
+      <Bottom.Screen name="History" component={History} />
     </Bottom.Navigator>
   );
 };

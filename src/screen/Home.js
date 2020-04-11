@@ -9,23 +9,20 @@ import {
   Alert,
   Button,
   Modal,
-  // AsyncStorage,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Picker, Label} from 'native-base';
 
-// import AsyncStorage from '@react-native-community/async-storage';
 import {ScrollView} from 'react-native-gesture-handler';
-// import ListItemComp from '../components/ListItem'
 import axios from 'axios';
 import {View} from 'native-base';
 import _ from 'lodash';
 import {Card} from 'react-native-elements';
 import ImagePicker from 'react-native-image-picker';
+import {connect} from 'react-redux';
+import {getProduct} from '../redux/action/product';
 
-//import { Modal } from 'react-native-paper';
-
-export default class Home extends Component {
+export class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -36,28 +33,16 @@ export default class Home extends Component {
       cartItems: [],
       modalVisible: false,
       modalEdit: false,
-      //  edit product
       name: '',
-
       cost: '',
       id_categori: '',
       stok: '',
       kategory: '',
       image: null,
+      qty: 0,
     };
     this.Search = _.debounce(this.Search, -0);
   }
-  editProduct = () => {
-    axios.get('http://localhost:8080/api/v1/product/').then(res => {
-      this.setState({
-        name: res.data[0].name,
-        image: res.data.image,
-        price: res.data[0].price,
-        id_categori: res.data[0].id_categori,
-        stock: res.data[0].stock,
-      });
-    });
-  };
   handleChoosePhoto = () => {
     const options = {
       title: 'Select Avatar',
@@ -81,13 +66,15 @@ export default class Home extends Component {
           fileImage: response,
         });
       }
-      // }
     });
   };
   UNSAFE_componentWillMount = async () => {
     try {
       const value = await AsyncStorage.getItem('token');
+      const value2 = await AsyncStorage.getItem('user');
+      this.setState({user: value2});
       console.log(value);
+      console.log(this.state.user);
       if (value === null) {
         this.props.navigation.navigate('Login');
       }
@@ -95,30 +82,10 @@ export default class Home extends Component {
       console.log(error);
     }
   };
-  componentDidMount = () => {
-    const id = this.props.match.params.id;
-    axios
-      .get('http://192.168.1.166:8080/api/v1/product/' + id)
-      .then(res => {
-        console.log(res);
-        this.setState({
-          name: res.data[0].name,
-          image: res.data.image,
-          price: res.data[0].price,
-          id_categori: res.data[0].id_categori,
-          stock: res.data[0].stock,
-        });
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-  };
 
-  // Sort
   handleChangeSort = e => {
     this.setState({sort: e});
     this.list();
-    // console.warn(this.state.sort)
   };
   list = () => {
     this.setState(state => {
@@ -128,8 +95,6 @@ export default class Home extends Component {
         state.Product.sort((a, b) => (a.name > b.name ? 1 : -1));
       } else if (state.sort === 'id_categori') {
         state.Product.sort((a, b) => (a.id_categori > b.id_categori ? 1 : -1));
-      } else {
-        state.product.sort((a, b) => (a.id > b.id ? 1 : -1));
       }
     });
   };
@@ -145,7 +110,7 @@ export default class Home extends Component {
     if (key && key.length > 0) {
       try {
         const response = await axios.get(
-          `http://192.168.1.4:8012/api/v1/product/search/${key}`,
+          `http://54.158.219.28:8011/api/v1/product/search/${key}`,
         );
         this.setState({
           Product: response.data,
@@ -169,13 +134,39 @@ export default class Home extends Component {
     this.getTv();
   };
   getTv = async () => {
-    await axios.get('http://192.168.1.4:8012/api/v1/product/').then(res => {
-      console.log(res.data.result);
+    await this.props.dispatch(getProduct()).then(response => {
       this.setState({
-        Product: res.data.result,
+        Product: response.value.data.result,
       });
     });
   };
+  Card(e, item) {
+    // console.log(item);
+    this.setState(state => {
+      const data = state.cartItems;
+      const cartNull = false;
+      data.map(cp => {
+        if (!cartNull) {
+          console.log(cp.id);
+        }
+        // console.log(cp);
+        // console.log(item);
+      });
+      if (!cartNull) {
+        data.push(item);
+      }
+      // console.log(data);
+      // data.push(item);
+    });
+    // this.state.cartItems.map(cart => {
+    //   if (item.id === cart.id) {
+    //     console.log('ini sama');
+    //   } else {
+    //     this.state.cartItems.push(item);
+    //   }
+    // });
+    // console.log(this.state.cartItems);
+  }
 
   listItemComp({item}) {
     return (
@@ -183,7 +174,10 @@ export default class Home extends Component {
         <View style={styles.listArea}>
           <Card
             image={{
-              uri: `${item.image.replace('localhost', '192.168.1.4')}`,
+              uri: `${item.image.replace(
+                'localhost:8012',
+                '54.158.219.28:8011',
+              )}`,
             }}>
             <Text
               onPress={() => {
@@ -202,8 +196,15 @@ export default class Home extends Component {
               <View style={styles.mdlEdit2}>
                 <Button
                   type="clear"
-                  title="Add To Cart"
+                  title="Edit"
                   onPress={() => this.setModalEdit(item)}
+                />
+              </View>
+              <View style={styles.mdlEdit2}>
+                <Button
+                  type="clear"
+                  title="Add To Cart"
+                  onPress={e => this.Card(e, item)}
                 />
               </View>
               <View style={styles.btnDlte}>
@@ -221,12 +222,14 @@ export default class Home extends Component {
   }
 
   // delete product
-  deleteProduct({item}) {
+  deleteProduct(item) {
     console.log(item);
     this.props.navigation.navigate('Home');
 
-    axios.delete('http://192.168.1.4:8012/api/v1/product/' + item);
-    Alert.alert('Success Delete Product');
+    axios
+      .delete('http://54.158.219.28:8011/api/v1/product/' + item)
+      .then(Alert.alert('Success delete product'))
+      .catch(Alert.alert('failed to delete product'));
   }
   deleteConfirm() {
     Alert.alert(
@@ -266,31 +269,48 @@ export default class Home extends Component {
       productPrice: item.price,
       productStock: item.stock,
       productCategory: item.id_categori,
-      productImage: item.image.replace('localhost', '192.168.1.4'),
+      productImage: item.image.replace('localhost:8012', '54.158.219.28:8011'),
     });
   }
   updateProduct = () => {
-    const {productId, name, cost, stok, kategory} = this.state;
+    console.log(this.state.fileImage.fileName);
+    const {productId, name, cost, stok, productCategory} = this.state;
     console.log(productId);
     const dataFile = new FormData();
     dataFile.append('name', name);
     dataFile.append('price', cost);
-
     dataFile.append('stock', stok);
     dataFile.append('image', {
       uri: this.state.fileImage.uri,
       type: 'image/jpeg',
       name: this.state.fileImage.fileName,
     });
-    dataFile.append('id_categori', kategory);
+    dataFile.append('id_categori', productCategory);
+    console.log(dataFile);
     this.props.navigation.navigate('Home');
+    console.log(dataFile);
     axios
-      .patch(`http://192.168.1.4:8012/api/v1/product/${productId}` + dataFile, {
-        headers: {'content-type': 'multipart/form-data'},
-      })
-      .then(console.log('edit success'))
-      .catch(error => {
-        console.log(error);
+      .patch(`http://54.158.219.28:8011/api/v1/product/${productId}`, dataFile)
+      .then(() => Alert.alert('edit product success'))
+      .then(this.setState({modalEdit: false}))
+
+      .catch(function(error) {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log(error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
       });
   };
   modalEdit = () => {
@@ -342,9 +362,11 @@ export default class Home extends Component {
                 onChangeText={stok => this.setState({stok})}
               />
               <Picker
+                selectedValue={resultCategory}
                 style={styles.inp}
-                onValueChange={kategory => this.setState({kategory})}
-                selectedValue={resultCategory}>
+                onValueChange={(itemValue, itemIndex) =>
+                  this.setState({productCategory: itemValue})
+                }>
                 <Picker.Item label="Category" value="0" />
                 <Picker.Item label="makanan" value="1" />
                 <Picker.Item label="minuman" value="2" />
@@ -364,7 +386,7 @@ export default class Home extends Component {
                 onPress={() => this.updateProduct(productId)}
                 style={styles.btnAddArea}>
                 <View>
-                  <Text style={styles.txtAddProduct}>Add Product</Text>
+                  <Text style={styles.txtAddProduct}>Edit Product</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
@@ -380,6 +402,12 @@ export default class Home extends Component {
       </Modal>
     );
   };
+  addCart() {
+    console.log('add Cart');
+  }
+  deleteItem(data) {
+    console.log('delete');
+  }
   render() {
     const Filter = () => {
       return (
@@ -396,6 +424,7 @@ export default class Home extends Component {
       );
     };
     const {Product} = this.state;
+
     return (
       <View style={styles.bodyArea}>
         <View style={styles.searchArea}>
@@ -424,7 +453,43 @@ export default class Home extends Component {
           </TouchableOpacity>
         </View>
 
-        <FlatList data={Product} renderItem={this.listItemComp.bind(this)} />
+        <FlatList
+          style={styles.list}
+          data={Product}
+          renderItem={this.listItemComp.bind(this)}
+        />
+        <View style={styles.btm}>
+          <View style={styles.btmnavigate}>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate('Home')}>
+              <Text>Home</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.btmnavigate}>
+            <TouchableOpacity
+              onPress={() =>
+                this.props.navigation.navigate('Cart', {
+                  data: this.state.cartItems,
+                  user: this.state.user,
+                })
+              }>
+              <Text>Cart</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.btmnavigate}>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate('Add')}>
+              <Text>Add</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.btmnavigate}>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate('History')}>
+              <Text>History</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <this.modalEdit />
       </View>
     );
@@ -432,6 +497,17 @@ export default class Home extends Component {
 }
 
 const styles = StyleSheet.create({
+  list: {flex: 1},
+  btm: {
+    flex: 0.07,
+    flexDirection: 'row',
+  },
+  btmnavigate: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'lightblue',
+  },
   img: {
     marginRight: 10,
   },
@@ -482,7 +558,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   mdlEdit2: {
-    marginRight: 90,
+    marginRight: 20,
   },
   btnDlte: {
     alignSelf: 'flex-end',
@@ -495,7 +571,7 @@ const styles = StyleSheet.create({
     height: 35,
   },
   bodyArea: {
-    marginBottom: 50,
+    flex: 1,
   },
   searchArea: {
     flexDirection: 'row',
@@ -546,3 +622,8 @@ const styles = StyleSheet.create({
     margin: 25,
   },
 });
+
+const mapStateToProps = ({product}) => {
+  return {product};
+};
+export default connect(mapStateToProps)(Home);

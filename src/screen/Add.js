@@ -65,9 +65,9 @@ export default class Add extends Component {
     });
     dataFile.append('id_categori', this.state.id_categori);
     this.props.navigation.navigate('Home');
+    console.log(dataFile);
     axios
-
-      .post('http://192.168.1.4:8012/api/v1/product/', dataFile, {
+      .post('http://54.158.219.28:8011/api/v1/product/', dataFile, {
         headers: {'content-type': 'multipart/form-data'},
       })
       .then(() => {
@@ -125,6 +125,13 @@ export default class Add extends Component {
                 <Text style={styles.txtbtnAddArea}>Add Product</Text>
               </View>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate('Home')}
+              style={styles.btnAddArea}>
+              <View>
+                <Text style={styles.txtbtnAddArea}>Cancel</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -172,6 +179,7 @@ const styles = StyleSheet.create({
   },
   btnAddArea: {
     alignItems: 'center',
+    marginTop: 10,
   },
   txtbtnAddArea: {
     fontWeight: 'bold',

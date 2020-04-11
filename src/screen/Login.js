@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import Axios from 'axios';
 import AsyncStorage from '@react-native-community/async-storage';
-import {RefreshControl} from 'react-native';
 import {RefreshControlBase} from 'react-native';
 
 export default class Login extends Component {
@@ -32,7 +31,7 @@ export default class Login extends Component {
       const value = await AsyncStorage.getItem('token');
       console.log(value);
       if (value !== null) {
-        this.props.navigation.navigate('Navigator');
+        this.props.navigation.navigate('Home');
       }
     } catch (error) {
       console.log(error);
@@ -41,7 +40,7 @@ export default class Login extends Component {
   validateUser = async () => {
     try {
       const response = await Axios.post(
-        'http://192.168.1.4:8012/api/v1/user/login',
+        'http://54.158.219.28:8011/api/v1/user/login',
         this.state,
       );
       this.setState({
@@ -50,13 +49,14 @@ export default class Login extends Component {
       });
       try {
         await AsyncStorage.setItem('token', this.state.token);
+        await AsyncStorage.setItem('user', this.state.name);
       } catch (error) {
         console.log(error);
       }
       if (response.data.token === undefined) {
         Alert.alert('username atau password salah');
       } else {
-        this.props.navigation.navigate('Navigator');
+        this.props.navigation.navigate('Home');
       }
     } catch (err) {
       this.setState({
