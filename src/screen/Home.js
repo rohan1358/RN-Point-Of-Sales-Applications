@@ -9,6 +9,7 @@ import {
   Alert,
   Button,
   Modal,
+  BackHandler,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Picker, Label} from 'native-base';
@@ -69,6 +70,7 @@ export class Home extends Component {
     });
   };
   UNSAFE_componentWillMount = async () => {
+    this.backHandler.remove();
     try {
       const value = await AsyncStorage.getItem('token');
       const value2 = await AsyncStorage.getItem('user');
@@ -130,7 +132,15 @@ export class Home extends Component {
       this.getTv();
     }
   };
+  backAction = () => {
+    BackHandler.exitApp();
+    return true;
+  };
   componentDidMount = () => {
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.backAction,
+    );
     this.getTv();
   };
   getTv = async () => {
@@ -145,16 +155,25 @@ export class Home extends Component {
     this.setState(state => {
       const data = state.cartItems;
       const cartNull = false;
+      let productAlreadyInCart = false;
       data.map(cp => {
-        if (!cartNull) {
-          console.log(cp.id);
+        if (cp.id === item.id) {
+          cp.count += 1;
+          productAlreadyInCart = true;
+          if (cp.count === item.stock) {
+            alert('cant add to cart');
+            cp.count -= 1;
+          }
         }
         // console.log(cp);
         // console.log(item);
       });
-      if (!cartNull) {
-        data.push(item);
+      if (!productAlreadyInCart) {
+        data.push({...item, count: 1});
       }
+      // if (!cartNull) {
+      //   data.push(item);
+      // }
       // console.log(data);
       // data.push(item);
     });

@@ -134,12 +134,6 @@ export default class History extends Component {
           </View>
           <View style={styles.btmnavigate}>
             <TouchableOpacity
-              onPress={() => this.props.navigation.navigate('Cart')}>
-              <Text>Cart</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.btmnavigate}>
-            <TouchableOpacity
               onPress={() => this.props.navigation.navigate('Add')}>
               <Text>Add</Text>
             </TouchableOpacity>

@@ -23,6 +23,7 @@ import {
 import {connect} from 'react-redux';
 import Axios from 'axios';
 import qs from 'query-string';
+import AsyncStorage from '@react-native-community/async-storage';
 export class Cart extends Component {
   constructor(props) {
     super(props);
@@ -46,7 +47,6 @@ export class Cart extends Component {
           productAlreadyInCart = true;
           if (cp.count === hello.stock) {
             alert('cant add to cart');
-            cp.count - 1;
           }
         }
       });
@@ -62,18 +62,21 @@ export class Cart extends Component {
       const data = state.data;
       let productAlreadyInCart = false;
       data.map(cp => {
-        if (cp.id === hello.id) {
-          counter = cp.count -= 1;
-          productAlreadyInCart = true;
-          if (cp.count === hello.stock) {
-            alert('cant add to cart');
-            cp.count - 1;
+        if (hello.count === 1) {
+          this.deleteOneCart(hello);
+        } else {
+          if (cp.id === hello.id) {
+            // if (cp.count === 1) {
+            //   this.handleDelete();
+            // }
+            counter = cp.count -= 1;
+            productAlreadyInCart = true;
           }
         }
       });
-      if (!productAlreadyInCart) {
-        data.push({...hello, count: 1});
-      }
+      // if (!productAlreadyInCart) {
+      //   data.push({...hello, count: 1});
+      // }
       return {data: data};
     });
   }
@@ -101,12 +104,9 @@ export class Cart extends Component {
     );
   }
   deleteOneCart = id => {
-    console.log(id.id);
-    const data = this.state.data;
-    data.map(hello => {
-      if (id.id === hello.id) {
-        console.log(typeof hello.id);
-      }
+    this.setState(state => {
+      const cartItems = state.data.filter(a => a.id !== id.id);
+      return {data: cartItems};
     });
   };
   Checkout = () => {
@@ -129,43 +129,7 @@ export class Cart extends Component {
     });
     Alert.alert(invoices);
   };
-  cartNotNull({id, title, img, hapus}) {
-    // console.log(id);
-    let count = this.state.count;
-    return (
-      <ListItem thumbnail>
-        <Left>
-          <Thumbnail
-            square
-            source={{
-              uri: img.replace('localhost:8012', '54.158.219.28:8011'),
-            }}
-          />
-        </Left>
-        <Body>
-          <Text>{title}</Text>
-          <View style={{flexDirection: 'row'}}>
-            <Button onPress={() => this.setState()}>
-              <Text>Reduce</Text>
-            </Button>
-            <Text> {count} </Text>
-            <Button onPress={() => (count = add += 1)}>
-              <Text>Add</Text>
-            </Button>
-          </View>
-        </Body>
-        <Right>
-          <TouchableOpacity onPress={() => hapus(id, count)}>
-            <Text>Delete</Text>
-          </TouchableOpacity>
-          <Button transparent onPress={() => this.cek()}>
-            <Text>Cek</Text>
-          </Button>
-        </Right>
-      </ListItem>
-    );
-  }
-  cek() {
+  delete(id) {
     console.log(this.state.data[0].count);
   }
   addQty() {}

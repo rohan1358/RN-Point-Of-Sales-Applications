@@ -17,13 +17,10 @@ import {RefreshControlBase} from 'react-native';
 export default class Login extends Component {
   constructor(props) {
     super(props);
-    let loggedIn = false;
     this.state = {
       name: '',
       password: '',
-      token: '',
-      loggedIn,
-      display: 'true',
+      email: '',
     };
   }
 
@@ -39,31 +36,16 @@ export default class Login extends Component {
     }
   };
   validateUser = async () => {
-    try {
-      const response = await Axios.post(
-        'http://54.158.219.28:8011/api/v1/user/login',
-        this.state,
-      );
-      this.setState({
-        loggedIn: true,
-        token: response.data.token,
-      });
-      try {
-        await AsyncStorage.setItem('token', this.state.token);
-        await AsyncStorage.setItem('user', this.state.name);
-      } catch (error) {
-        console.log(error);
-      }
-      if (response.data.token === undefined) {
-        Alert.alert('username atau password salah');
-      } else {
-        this.props.navigation.navigate('Home');
-      }
-    } catch (err) {
-      this.setState({
-        loading: false,
-        error: true,
-      });
+    console.log('masuk validate user');
+    const state = this.state;
+    const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg.test(this.state.email) === true && this.state.password.length > 5) {
+      Axios.post('http://54.158.219.28:8011/api/v1/user/insert', state)
+        .then(Alert.alert('register success'))
+        .then(this.props.navigation.navigate('Login'))
+        .catch(error => {
+          console.log(error);
+        });
     }
   };
   reload = () => {
@@ -88,19 +70,18 @@ export default class Login extends Component {
               onChangeText={value => this.setState({name: value})}
             />
             <TextInput
+              style={[styles.input, styles.username, styles.dbl]}
+              placeholder="Email"
+              onChangeText={value => this.setState({email: value})}
+            />
+            <TextInput
               secureTextEntry={true}
               style={[styles.input, styles.password]}
               placeholder="Password"
               onChangeText={value => this.setState({password: value})}
             />
-            <TouchableOpacity onPress={this.validateUser}>
+            <TouchableOpacity onPress={() => this.validateUser()}>
               <View style={styles.button}>
-                <Text style={styles.fontLogin}>Login</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => this.props.navigation.navigate('Register')}>
-              <View style={styles.button2}>
                 <Text style={styles.fontLogin}>Register</Text>
               </View>
             </TouchableOpacity>
@@ -154,15 +135,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1b9094',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  button2: {
-    margin: 50,
-    height: 50,
-    borderRadius: 5,
-    backgroundColor: '#1b9094',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 0,
   },
   fontLogin: {
     fontSize: 23,
