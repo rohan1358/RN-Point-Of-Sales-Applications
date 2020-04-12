@@ -1,5 +1,11 @@
 import React, {Component} from 'react';
-import {Text, View, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Table, Row, Rows} from 'react-native-table-component';
 import Axios from 'axios';
@@ -8,17 +14,35 @@ export default class History extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      history: [],
       tableHead: ['Cashier', 'date', 'Amount'],
-      tableData: [],
-      invoices: [],
+      tableData: [[]],
+      users: [],
+      dates: [],
+      total: [],
     };
   }
-
+  getAllHistory() {
+    Axios.get('http://54.158.219.28:8011/api/v1/order').then(res => {
+      const history = res.data;
+      // this.setState({invoices: history});
+      history.map(histori => {
+        console.log(histori);
+        this.state.tableData.push(histori.users);
+        // this.state.tableData.push(histori.dates);
+        // this.state.tableData.push(histori.total);
+      });
+    });
+  }
   UNSAFE_componentWillMount() {
     Axios.get('http://54.158.219.28:8011/api/v1/order').then(res => {
       const history = res.data;
-      () => this.setState({invoices: history.invoices});
+      // this.setState({invoices: history});
+      history.map(histori => {
+        console.log(histori);
+        this.state.users.push(histori.users);
+        this.state.dates.push(histori.dates);
+        this.state.total.push(histori.total);
+      });
     });
     Axios.get('http://54.158.219.28:8011/api/v1/order/todayIncome').then(
       res => {
@@ -41,9 +65,16 @@ export default class History extends Component {
     const state = this.state;
     return (
       <View style={{flex: 1}}>
-        <Button onPress={() => console.log(this.state.invoices)}>
-          <Text>test</Text>
-        </Button>
+        <View
+          style={{
+            alignItems: 'center',
+            backgroundColor: 'lightblue',
+            marginBottom: 10,
+          }}>
+          <Text style={{fontSize: 20, fontWeight: 'bold', paddingVertical: 5}}>
+            History
+          </Text>
+        </View>
         <View
           style={{
             flexDirection: 'row',
@@ -70,17 +101,30 @@ export default class History extends Component {
             </View>
           </View>
         </View>
-        <View>
-          <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
-            <Row
-              data={state.tableHead}
-              style={styles.head}
-              textStyle={styles.text}
-            />
-            <Rows textStyle={styles.text} />
-          </Table>
+        <View style={{flexDirection: 'row', flex: 1, marginTop: 10}}>
+          <ScrollView>
+            <View style={{flexDirection: 'row'}}>
+              <View style={styles.historyArea}>
+                <Text style={styles.title}>Cachier</Text>
+                {state.users.map(user => {
+                  return <Text style={styles.content}>{user}</Text>;
+                })}
+              </View>
+              <View style={styles.historyArea}>
+                <Text style={styles.title}>Date</Text>
+                {state.dates.map(user => {
+                  return <Text style={styles.content}>{user}</Text>;
+                })}
+              </View>
+              <View style={styles.historyArea}>
+                <Text style={styles.title}>Amount</Text>
+                {state.total.map(user => {
+                  return <Text style={styles.content}>{user}</Text>;
+                })}
+              </View>
+            </View>
+          </ScrollView>
         </View>
-        <View style={{flex: 1}} />
         <View style={styles.btm}>
           <View style={styles.btmnavigate}>
             <TouchableOpacity
@@ -137,5 +181,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 5,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    alignSelf: 'center',
+    borderBottomWidth: 2,
+    marginBottom: 5,
+  },
+  historyArea: {
+    flex: 1,
+    borderWidth: 1,
+    // paddingLeft: 5,
+  },
+  content: {
+    marginVertical: 4,
+    borderBottomWidth: 1,
+    paddingLeft: 5,
   },
 });
