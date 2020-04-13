@@ -12,14 +12,7 @@ import {
   Right,
   Button,
 } from 'native-base';
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Image,
-  FlatList,
-  Alert,
-} from 'react-native';
+import {StyleSheet, TouchableOpacity, View, Image, Alert} from 'react-native';
 import {connect} from 'react-redux';
 import Axios from 'axios';
 import qs from 'query-string';
@@ -34,7 +27,9 @@ export class Cart extends Component {
       dummy: [],
       user: this.props.route.params.user,
     };
-    this.handleDelete = this.deleteOneCart.bind(this);
+  }
+  UNSAFE_componentWillMount() {
+    console.log(this.props);
   }
   add(e, hello) {
     let counter = 1;
@@ -46,13 +41,14 @@ export class Cart extends Component {
           counter = cp.count += 1;
           productAlreadyInCart = true;
           if (cp.count === hello.stock) {
-            alert('cant add to cart');
+            Alert.alert('cant add to cart');
           }
         }
       });
       if (!productAlreadyInCart) {
         data.push({...hello, count: 1});
       }
+      AsyncStorage.setItem('data', JSON.stringify(data));
       return {data: data};
     });
   }
@@ -63,22 +59,18 @@ export class Cart extends Component {
       let productAlreadyInCart = false;
       data.map(cp => {
         if (hello.count === 1) {
-          this.deleteOneCart(hello);
+          this.deleteOneCart(e, hello);
         } else {
           if (cp.id === hello.id) {
-            // if (cp.count === 1) {
-            //   this.handleDelete();
-            // }
             counter = cp.count -= 1;
             productAlreadyInCart = true;
           }
         }
       });
-      // if (!productAlreadyInCart) {
-      //   data.push({...hello, count: 1});
-      // }
+      AsyncStorage.setItem('data', JSON.stringify(data));
       return {data: data};
     });
+    this.props.route.params.deleteOneCart(e, hello);
   }
   cartNull() {
     return (
@@ -103,19 +95,24 @@ export class Cart extends Component {
       </View>
     );
   }
-  deleteOneCart = id => {
-    this.setState(state => {
-      const cartItems = state.data.filter(a => a.id !== id.id);
-      return {data: cartItems};
+  deleteOneCart = (e, id) => {
+    console.log(id);
+    this.setState(props => {
+      const data = this.state.data.filter(a => a.id !== id.id);
+      AsyncStorage.setItem('data', JSON.stringify(data));
+      console.log(data);
+      return {data: data};
     });
+    this.props.route.params.deleteOneCart(e, id);
   };
   Checkout = () => {
+    const state = this.state;
+    console.log(state.user);
     const date = new Date();
     const month = date.toDateString();
     const year = date.getFullYear();
-    this.setState({setModalShow: true});
     const invoices = new Date().toLocaleString().replace(/[/:, -,P,M,A]/gi, '');
-    this.props.route.params.data.forEach(state => {
+    this.state.data.map(state => {
       const form = {
         product_id: state.id,
         qty: state.count,
@@ -127,14 +124,10 @@ export class Cart extends Component {
       };
       Axios.post('http://54.158.219.28:8011/api/v1/order', qs.stringify(form));
     });
-    Alert.alert(invoices);
+    Alert.alert('Succes, Checkin History ');
   };
-  delete(id) {
-    console.log(this.state.data[0].count);
-  }
   addQty() {}
   render() {
-    const {cartItems} = this.state;
     console.log(this.state.data);
     return (
       <View style={{flex: 1}}>
@@ -145,18 +138,6 @@ export class Cart extends Component {
         </View>
         <Container>
           <Content>
-            {/* <FlatList
-              data={this.state.data}
-              renderItem={({item}) => (
-                <this.cartNotNull
-                  title={item.name}
-                  id={item.id}
-                  img={item.image}
-                  hapus={this.handleDelete}
-                />
-              )}
-              keyExtractor={item => item.id}
-            /> */}
             {this.state.data.map(hello => {
               return (
                 <ListItem thumbnail>
@@ -197,11 +178,12 @@ export class Cart extends Component {
                     </View>
                   </Body>
                   <Right>
-                    <TouchableOpacity onPress={() => this.handleDelete(hello)}>
+                    <TouchableOpacity
+                      onPress={e =>
+                        // this.props.route.params.deleteOneCart(e, hello)
+                        this.deleteOneCart(e, hello)
+                      }>
                       <Text>Delete</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity transparent onPress={() => this.cek()}>
-                      <Text>Cek</Text>
                     </TouchableOpacity>
                   </Right>
                 </ListItem>
@@ -214,11 +196,7 @@ export class Cart extends Component {
             <Text>Total</Text>
             <Text style={{}}>
               Rp.
-              {this.props.route.params.data.reduce(
-                (a, c) => a + c.price * c.count,
-                0,
-              )}
-              *
+              {this.state.data.reduce((a, c) => a + c.price * c.count, 0)}*
             </Text>
           </View>
           <Button

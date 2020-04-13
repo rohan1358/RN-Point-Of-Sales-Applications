@@ -52,6 +52,10 @@ export default class Add extends Component {
     });
   };
 
+  // UNSAFE_componentWillMount() {
+  //   console.log(this.props.raoute.params.user);
+  // }
+
   handleAdd = () => {
     const dataFile = new FormData();
     dataFile.append('name', this.state.name);

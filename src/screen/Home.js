@@ -31,7 +31,7 @@ export class Home extends Component {
       search: '',
       sort: '',
       idP: 0,
-      cartItems: [],
+      data: [],
       modalVisible: false,
       modalEdit: false,
       name: '',
@@ -43,6 +43,7 @@ export class Home extends Component {
       qty: 0,
     };
     this.Search = _.debounce(this.Search, -0);
+    this.deleteOneCart = this.deleteOneCart.bind(this);
   }
   handleChoosePhoto = () => {
     const options = {
@@ -69,11 +70,14 @@ export class Home extends Component {
       }
     });
   };
+  componentDidUpdate() {
+    console.log(this.state.data);
+  }
   UNSAFE_componentWillMount = async () => {
-    this.backHandler.remove();
     try {
       const value = await AsyncStorage.getItem('token');
       const value2 = await AsyncStorage.getItem('user');
+      // console.log(value2)
       this.setState({user: value2});
       console.log(value);
       console.log(this.state.user);
@@ -151,10 +155,8 @@ export class Home extends Component {
     });
   };
   Card(e, item) {
-    // console.log(item);
     this.setState(state => {
-      const data = state.cartItems;
-      const cartNull = false;
+      const data = state.data;
       let productAlreadyInCart = false;
       data.map(cp => {
         if (cp.id === item.id) {
@@ -162,31 +164,22 @@ export class Home extends Component {
           productAlreadyInCart = true;
           if (cp.count === item.stock) {
             alert('cant add to cart');
-            cp.count -= 1;
           }
         }
-        // console.log(cp);
-        // console.log(item);
       });
       if (!productAlreadyInCart) {
         data.push({...item, count: 1});
       }
-      // if (!cartNull) {
-      //   data.push(item);
-      // }
-      // console.log(data);
-      // data.push(item);
     });
-    // this.state.cartItems.map(cart => {
-    //   if (item.id === cart.id) {
-    //     console.log('ini sama');
-    //   } else {
-    //     this.state.cartItems.push(item);
-    //   }
-    // });
-    // console.log(this.state.cartItems);
   }
-
+  deleteOneCart = (e, id) => {
+    console.log(id);
+    this.setState(props => {
+      const data = this.state.data.filter(a => a.id !== id.id);
+      AsyncStorage.setItem('data', JSON.stringify(data));
+      return {data: data};
+    });
+  };
   listItemComp({item}) {
     return (
       <View>
@@ -488,8 +481,9 @@ export class Home extends Component {
             <TouchableOpacity
               onPress={() =>
                 this.props.navigation.navigate('Cart', {
-                  data: this.state.cartItems,
+                  data: this.state.data,
                   user: this.state.user,
+                  deleteOneCart: (e, hello) => this.deleteOneCart(e, hello),
                 })
               }>
               <Text>Cart</Text>
