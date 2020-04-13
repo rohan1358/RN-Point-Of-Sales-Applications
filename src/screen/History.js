@@ -82,7 +82,7 @@ export default class History extends Component {
           <View style={styles.income}>
             <View>
               <Text>Today's Income</Text>
-              <Text>{state.todayIncome}</Text>
+              <Text>Rp.{state.todayIncome}</Text>
               <Text>+2% Yesterday</Text>
             </View>
           </View>
@@ -96,7 +96,7 @@ export default class History extends Component {
           <View style={styles.income}>
             <View>
               <Text>This Year's Income</Text>
-              <Text>{state.yearIncome}</Text>
+              <Text>Rp.{state.yearIncome}</Text>
               <Text>+2% Yesterday</Text>
             </View>
           </View>
