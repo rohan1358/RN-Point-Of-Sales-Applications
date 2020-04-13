@@ -33,4 +33,4 @@
 - - - - -
 
 ## Realease Backend
-* [`Backend-Hit-Hit-Baam`](https://github.com/rohan1358/BackEnd-Point-Of-Sales)
+* [`Backend-Point-Of-Sales`](https://github.com/rohan1358/BackEnd-Point-Of-Sales)
