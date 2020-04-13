@@ -1,7 +1,7 @@
 <h1 align="center">React Native - Point Of Sales</h1>
 
 
-this is simple App Point Of Sales
+### this is simple App Point Of Sales
 
 ## Features
 - Register & Login
