@@ -1,4 +1,7 @@
 <h1 align="center">React Native - Point Of Sales</h1>
+<p align="center">
+  <img width="300" height="auto" src="http://34.226.203.160:3000/static/media/logo.e62e8c39.png">
+</p>
 
 
 ### this is simple App Point Of Sales
@@ -26,7 +29,7 @@
 5. Type $`react-native run-android` for run this app. ***Make sure your device is connected with debugging mode***.
 
 ## Demos
-![posNativeDemos 1 -min](https://user-images.githubusercontent.com/28683986/79118033-e8b64280-7db6-11ea-8a20-379237844e24.gif)
+<img src="https://user-images.githubusercontent.com/28683986/79118033-e8b64280-7db6-11ea-8a20-379237844e24.gif" width="500" />
 
 
 ## Release APK
