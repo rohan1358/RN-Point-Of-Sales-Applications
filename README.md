@@ -15,7 +15,7 @@
 * [`npm`](https://www.npmjs.com/get-npm)
 * [`react-native`](https://facebook.github.io/react-native/docs/getting-started)
 * [`react-native-cli`](https://facebook.github.io/react-native/docs/getting-started)
-* [`Backend-Hit-Hit-Baam`](https://github.com/rohan1358/BackEnd-Point-Of-Sales)
+* [`Backend-Point-Of-Sales`](https://github.com/rohan1358/BackEnd-Point-Of-Sales)
 
 
 ## Usage for development
